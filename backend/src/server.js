@@ -8,6 +8,9 @@ const { db, auth } = require('./config/firebase');
 const { verifyToken } = require('./middleware/auth');
 const { errorHandler, notFoundHandler, asyncHandler } = require('./middleware/errorHandler');
 
+// Import route files
+const expense_Routes = require('./routes/expenseRoutes');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -88,6 +91,40 @@ app.get('/api/user/profile', verifyToken, asyncHandler(async (req, res) => {
     user: userDoc.data()
   });
 }));
+
+// TEMPORARY - For testing only
+app.post('/api/test/get-token', asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  
+  if (!email) {
+    return res.status(400).json({ error: 'Email required' });
+  }
+
+  try {
+    const userRecord = await auth.getUserByEmail(email);
+    const customToken = await auth.createCustomToken(userRecord.uid);
+    
+    res.status(200).json({
+      customToken: customToken,
+      uid: userRecord.uid,
+      email: userRecord.email
+    });
+  } catch (error) {
+    if (error.code === 'auth/user-not-found') {
+      return res.status(404).json({
+        error: 'User not found',
+        message: 'Create a user first'
+      });
+    }
+    throw error;
+  }
+}));
+
+/**
+ * API ROUTES
+ */
+// Mount expense routes at /api/expenses
+app.use('/api/expenses', expense_Routes);
 
 /**
  * ERROR HANDLING
