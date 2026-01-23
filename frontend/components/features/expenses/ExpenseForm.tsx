@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CATEGORIES, CATEGORY_ICONS } from '@/utils/constants';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Loader2 } from 'lucide-react';
 import { Expense } from '@/types/api.types';
 import { cn } from '@/lib/utils';
 
@@ -24,6 +24,7 @@ interface ExpenseFormProps {
 export const ExpenseForm = ({ expense, onSuccess, onCancel }: ExpenseFormProps) => {
   const [selectedCategory, setSelectedCategory] = useState(expense?.category || '');
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState('');
   const queryClient = useQueryClient();
 
   const {
@@ -60,17 +61,32 @@ export const ExpenseForm = ({ expense, onSuccess, onCancel }: ExpenseFormProps) 
     },
   });
 
-  const handleAISuggest = async () => {
-    if (!description || description.trim().length === 0) return;
+  const handleAISuggest = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault(); // ✅ Prevent form submission
+    
+    if (!description || description.trim().length === 0) {
+      setAiError('Please enter a description first');
+      return;
+    }
 
     setAiLoading(true);
+    setAiError('');
+
     try {
+      console.log('🤖 Requesting AI category for:', description);
       const result = await ApiService.getSuggestedCategory(description);
+      console.log('✅ AI suggested category:', result.category);
+      
       setSelectedCategory(result.category);
       setValue('category', result.category);
       setValue('aiSuggested', true);
-    } catch (error) {
-      console.error('AI suggestion failed:', error);
+      
+      // Show success feedback
+      setAiError(`AI suggested: ${result.category}`);
+      setTimeout(() => setAiError(''), 3000);
+    } catch (error: any) {
+      console.error('❌ AI suggestion failed:', error);
+      setAiError(error.response?.data?.message || 'AI suggestion failed. Please select manually.');
     } finally {
       setAiLoading(false);
     }
@@ -79,12 +95,13 @@ export const ExpenseForm = ({ expense, onSuccess, onCancel }: ExpenseFormProps) 
   const handleCategorySelect = (category: string) => {
     setSelectedCategory(category);
     setValue('category', category);
+    setAiError(''); // Clear any AI errors
   };
 
   const onSubmit = (data: ExpenseFormData) => {
     const submitData = {
       ...data,
-      category: selectedCategory, // Use selected category
+      category: selectedCategory,
     };
 
     if (expense) {
@@ -139,14 +156,32 @@ export const ExpenseForm = ({ expense, onSuccess, onCancel }: ExpenseFormProps) 
                 onClick={handleAISuggest}
                 disabled={aiLoading || !description}
               >
-                <Sparkles className="h-4 w-4 mr-2" />
-                {aiLoading ? 'AI...' : 'AI'}
+                {aiLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    AI...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    AI Suggest
+                  </>
+                )}
               </Button>
             </div>
             
-            {/* Hidden input for form validation */}
-            <input type="hidden" {...register('category')} value={selectedCategory} />
-            
+            {/* AI Feedback Message */}
+            {aiError && (
+              <div className={cn(
+                "text-sm p-2 rounded-lg",
+                aiError.includes('suggested') 
+                  ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
+                  : "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300"
+              )}>
+                {aiError}
+              </div>
+            )}
+
             {/* Category Buttons Grid */}
             <div className="grid grid-cols-4 gap-2">
               {CATEGORIES.map((category) => (
@@ -166,6 +201,14 @@ export const ExpenseForm = ({ expense, onSuccess, onCancel }: ExpenseFormProps) 
                 </button>
               ))}
             </div>
+            
+            {/* Show selected category */}
+            {selectedCategory && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span>Selected:</span>
+                <span className="font-medium text-foreground">{selectedCategory}</span>
+              </div>
+            )}
             
             {errors.category && (
               <p className="text-sm text-destructive">{errors.category.message}</p>
@@ -189,9 +232,16 @@ export const ExpenseForm = ({ expense, onSuccess, onCancel }: ExpenseFormProps) 
               type="button"
               onClick={handleSubmit(onSubmit)}
               className="flex-1"
-              disabled={isLoading}
+              disabled={isLoading || !selectedCategory}
             >
-              {isLoading ? 'Saving...' : expense ? 'Update Expense' : 'Add Expense'}
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                expense ? 'Update Expense' : 'Add Expense'
+              )}
             </Button>
             {onCancel && (
               <Button type="button" variant="outline" onClick={onCancel}>

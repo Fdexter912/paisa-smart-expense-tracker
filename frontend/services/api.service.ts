@@ -33,7 +33,7 @@ export class ApiService {
   }
 
   static async getSuggestedCategory(description: string): Promise<{ category: string }> {
-    const { data } = await apiClient.post('/ai/suggested-categorize', { description });
+    const { data } = await apiClient.post('/ai/suggest-category', { description });
     return data;
   }
 }
