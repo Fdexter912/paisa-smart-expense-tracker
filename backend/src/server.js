@@ -10,6 +10,7 @@ const { errorHandler, notFoundHandler, asyncHandler } = require('./middleware/er
 
 // Import route files
 const expense_Routes = require('./routes/expenseRoutes');
+const aiRoutes = require('./routes/aiRoutes');  // ADD THIS
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -120,11 +121,24 @@ app.post('/api/test/get-token', asyncHandler(async (req, res) => {
   }
 }));
 
+// TEMPORARY - Check API key
+app.get('/api/test/check-ai', (req, res) => {
+  res.json({
+    hasApiKey: !!process.env.ANTHROPIC_API_KEY,
+    keyPreview: process.env.ANTHROPIC_API_KEY 
+      ? process.env.ANTHROPIC_API_KEY.substring(0, 10) + '...' 
+      : 'NOT SET'
+  });
+});
+
 /**
  * API ROUTES
  */
 // Mount expense routes at /api/expenses
 app.use('/api/expenses', expense_Routes);
+
+// Mount AI routes at /api/ai
+app.use('/api/ai', aiRoutes);  // ADD THIS
 
 /**
  * ERROR HANDLING

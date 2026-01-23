@@ -1,0 +1,22 @@
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+require("dotenv").config();
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+async function test() {
+  try {
+    const model = genAI.getGenerativeModel({
+      model: "models/gemini-3-flash-preview",
+    });
+
+    const result = await model.generateContent(
+      "Say hello in one sentence."
+    );
+
+    console.log(result.response.text());
+  } catch (err) {
+    console.error("❌ Error:", err);
+  }
+}
+
+test();
