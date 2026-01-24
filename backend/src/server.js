@@ -7,7 +7,7 @@ require('dotenv').config();
 const { db, auth } = require('./config/firebase');
 const { verifyToken } = require('./middleware/auth');
 const { errorHandler, notFoundHandler, asyncHandler } = require('./middleware/errorHandler');
-
+const recurringExpenseRoutes = require('./routes/recurringExpensesRoutes')
 // Import route files
 const expense_Routes = require('./routes/expenseRoutes');
 const aiRoutes = require('./routes/aiRoutes');  // ADD THIS
@@ -140,11 +140,41 @@ app.use('/api/expenses', expense_Routes);
 // Mount AI routes at /api/ai
 app.use('/api/ai', aiRoutes);  // ADD THIS
 
+// Mount recurring expenses routes
+app.use('/api/recurring-expenses', recurringExpenseRoutes);
+
 /**
  * ERROR HANDLING
  */
 app.use(notFoundHandler);
 app.use(errorHandler);
+
+/**
+ * CRON JOBS
+ */
+
+// Import cron and controller
+const cron = require('node-cron');
+const { generateDueExpenses } = require('./controllers/recurringExpenseController');
+
+// Run every day at midnight (00:00) to auto-generate recurring expenses
+cron.schedule('0 0 * * *', async () => {
+  console.log('═══════════════════════════════════════');
+  console.log('🕐 Running scheduled recurring expense generation...');
+  console.log('Time:', new Date().toISOString());
+  
+  const result = await generateDueExpenses();
+  
+  if (result.success) {
+    console.log(`✅ Successfully generated ${result.generated} recurring expenses`);
+  } else {
+    console.error(`❌ Cron job failed: ${result.error}`);
+  }
+  
+  console.log('═══════════════════════════════════════');
+});
+
+console.log('⏰ Cron job scheduled: Daily at midnight (00:00)');
 
 /**
  * START SERVER
