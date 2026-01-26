@@ -10,7 +10,8 @@ const { errorHandler, notFoundHandler, asyncHandler } = require('./middleware/er
 const recurringExpenseRoutes = require('./routes/recurringExpensesRoutes')
 // Import route files
 const expense_Routes = require('./routes/expenseRoutes');
-const aiRoutes = require('./routes/aiRoutes');  // ADD THIS
+const aiRoutes = require('./routes/aiRoutes');  
+const budgetRoutes = require('./routes/budgetRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -142,6 +143,9 @@ app.use('/api/ai', aiRoutes);  // ADD THIS
 
 // Mount recurring expenses routes
 app.use('/api/recurring-expenses', recurringExpenseRoutes);
+
+// Mount budget routes
+app.use('/api/budgets', budgetRoutes);
 
 /**
  * ERROR HANDLING

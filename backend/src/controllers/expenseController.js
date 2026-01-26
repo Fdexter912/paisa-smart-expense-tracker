@@ -9,6 +9,7 @@
 
 const { db } = require('../config/firebase');
 const { validateExpense, sanitizeExpense, validatePartialExpense } = require('../models/expenseModel');
+const { updateAffectedBudgets } = require('./budgetController');
 
 /**
  * CREATE: Add a new expense
@@ -43,6 +44,8 @@ const createExpense = async (req, res) => {
     // addDoc generates a unique ID automatically
     const docRef = await db.collection('expenses').add(expenseData);
 
+    // Update affected budgets
+    await updateAffectedBudgets(req.user.uid, expenseData.date);
     // Step 5: Return created expense with ID
     res.status(201).json({
       message: 'Expense created successfully',
@@ -271,7 +274,8 @@ const updateExpense = async (req, res) => {
 
     // Step 6: Get updated document
     const updatedDoc = await docRef.get();
-
+    // Update affected budgets
+    await updateAffectedBudgets(req.user.uid, updateData.date || existingData.date);
     res.status(200).json({
       message: 'Expense updated successfully',
       expense: {
@@ -322,7 +326,8 @@ const deleteExpense = async (req, res) => {
 
     // Step 3: Delete from Firestore
     await docRef.delete();
-
+    // Update affected budgets after deletion
+    await updateAffectedBudgets(userId, expenseData.date);
     res.status(200).json({
       message: 'Expense deleted successfully',
       deletedId: id
