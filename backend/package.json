@@ -13,6 +13,9 @@
     "tracker",
     "api"
   ],
+  "engines": {
+  "node": "18.x"
+  },
   "author": "Fahama Abdul Rehman",
   "license": "MIT",
   "dependencies": {
