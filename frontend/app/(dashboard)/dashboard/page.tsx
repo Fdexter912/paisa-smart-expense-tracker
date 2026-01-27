@@ -9,6 +9,7 @@ import { CategoryChart } from '@/components/features/dashboard/CategoryCard';
 import { BarChartComponent } from '@/components/features/dashboard/BarChartComponent';
 import { ExpenseForm } from '@/components/features/expenses/ExpenseForm';
 import { ExpenseList } from '@/components/features/expenses/ExpenseList';
+import { CurrentBudgetWidget } from '@/components/features/budget/CurrentBudgetWidget';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, X } from 'lucide-react';
@@ -67,6 +68,9 @@ export default function DashboardPage() {
         <div className="space-y-4">
           <StatsCards stats={stats || null} />
         </div>
+
+        {/* Current Budget Widget */}
+        <CurrentBudgetWidget />
 
         {/* Charts Section */}
         {stats && stats.categoryBreakdown.length > 0 && (

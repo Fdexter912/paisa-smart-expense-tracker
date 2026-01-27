@@ -101,3 +101,77 @@ export interface UpcomingRecurringExpense {
   nextOccurrence: string;
   daysUntil: number;
 }
+
+export interface CategoryBudget {
+  category: string;
+  limit: number;
+  spent: number;
+  remaining: number;
+  percentage: number;
+}
+
+export interface BudgetAlert {
+  category: string;
+  threshold: number;
+  triggered: boolean;
+  triggeredAt?: string;
+}
+
+export interface Budget {
+  id: string;
+  userId: string;
+  name: string;
+  type: 'monthly' | 'weekly' | 'custom';
+  period: {
+    startDate: string;
+    endDate: string;
+  };
+  categoryBudgets: CategoryBudget[];
+  totalLimit: number;
+  totalSpent: number;
+  totalRemaining: number;
+  alerts: BudgetAlert[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateBudgetDto {
+  name: string;
+  type: 'monthly' | 'weekly' | 'custom';
+  period: {
+    startDate: string;
+    endDate: string;
+  };
+  categoryBudgets: {
+    category: string;
+    limit: number;
+  }[];
+  alerts?: {
+    category: string;
+    threshold: number;
+  }[];
+  isActive?: boolean;
+}
+
+export interface UpdateBudgetDto extends Partial<CreateBudgetDto> {}
+
+export interface BudgetProgress {
+  budget: Budget;
+  overall: {
+    totalLimit: number;
+    totalSpent: number;
+    totalRemaining: number;
+    percentageUsed: number;
+    status: 'on-track' | 'warning' | 'over-budget';
+  };
+  categoryProgress: {
+    category: string;
+    limit: number;
+    spent: number;
+    remaining: number;
+    percentage: number;
+    status: 'safe' | 'warning' | 'critical' | 'exceeded';
+  }[];
+  triggeredAlerts: BudgetAlert[];
+}

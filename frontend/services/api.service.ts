@@ -7,7 +7,12 @@ import {
   RecurringExpense,
   CreateRecurringExpenseDto,
   UpdateRecurringExpenseDto,
-  UpcomingRecurringExpense
+  UpcomingRecurringExpense,
+  Budget,
+  BudgetProgress,
+  CreateBudgetDto,
+  UpdateBudgetDto,
+  RecurringExpensesResponse
 } from '@/types/api.types';
 
 export class ApiService {
@@ -81,6 +86,50 @@ static async getUpcomingRecurringExpenses(): Promise<{ upcoming: UpcomingRecurri
 
 static async generateRecurringExpense(id: string): Promise<{ expense: Expense; message: string }> {
   const { data } = await apiClient.post(`/recurring-expenses/${id}/generate`);
+  return data;
+}
+
+// Budgets
+static async getBudgets(): Promise<{ budgets: Budget[] }> {
+  const { data } = await apiClient.get('/budgets');
+  return data;
+}
+
+static async getCurrentBudget(): Promise<{ budget: Budget | null }> {
+  const { data } = await apiClient.get('/budgets/current');
+  return data;
+}
+
+static async getBudgetById(id: string): Promise<{ budget: Budget }> {
+  const { data } = await apiClient.get(`/budgets/${id}`);
+  return data;
+}
+
+static async getBudgetProgress(id: string): Promise<BudgetProgress> {
+  const { data } = await apiClient.get(`/budgets/${id}/progress`);
+  return data;
+}
+
+static async createBudget(budgetData: CreateBudgetDto): Promise<{ budget: Budget }> {
+  const { data } = await apiClient.post('/budgets', budgetData);
+  return data;
+}
+
+static async updateBudget(id: string, budgetData: UpdateBudgetDto): Promise<{ budget: Budget }> {
+  const { data } = await apiClient.put(`/budgets/${id}`, budgetData);
+  return data;
+}
+
+static async deleteBudget(id: string): Promise<{ message: string }> {
+  const { data } = await apiClient.delete(`/budgets/${id}`);
+  return data;
+}
+
+static async configureBudgetAlerts(
+  id: string,
+  alerts: { category: string; threshold: number }[]
+): Promise<{ budget: Budget }> {
+  const { data } = await apiClient.post(`/budgets/${id}/alerts`, { alerts });
   return data;
 }
 }

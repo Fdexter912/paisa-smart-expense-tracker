@@ -34,6 +34,29 @@ export const recurringExpenseSchema = z.object({
   reminderDays: z.number().min(0).max(30).optional(), // ✅ Added
 });
 
+export const budgetSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
+  type: z.enum(['monthly', 'weekly', 'custom']),
+  period: z.object({
+    startDate: z.string().min(1, 'Start date required'),
+    endDate: z.string().min(1, 'End date required'),
+  }),
+  categoryBudgets: z.array(
+    z.object({
+      category: z.string().min(1),
+      limit: z.number().min(0.01).max(1000000),
+    })
+  ).min(1, 'At least one category budget required'),
+  alerts: z.array(
+    z.object({
+      category: z.string(),
+      threshold: z.number().min(0).max(100),
+    })
+  ).optional(),
+  isActive: z.boolean().optional(),
+});
+
+export type BudgetFormData = z.infer<typeof budgetSchema>;
 export type ExpenseFormData = z.infer<typeof expenseSchema>;
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegisterFormData = z.infer<typeof registerSchema>;

@@ -1,6 +1,6 @@
 'use client'
 
-import { LogOut, Menu, Moon, Sun, Home, Receipt, Repeat } from 'lucide-react';
+import { LogOut, Menu, Moon, Sun, Home, Receipt, Repeat, TrendingUp } from 'lucide-react';
 import { useAuthStore } from '@/store';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -32,6 +32,7 @@ export const Header = () => {
   const navLinks = [
     { href: '/dashboard', label: 'Dashboard', icon: Home },
     { href: '/recurring', label: 'Recurring', icon: Repeat },
+    { href: '/budgets', label: 'Budgets', icon: TrendingUp },
   ];
 
   return (
