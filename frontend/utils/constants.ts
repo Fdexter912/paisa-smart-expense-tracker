@@ -30,3 +30,15 @@ export const CATEGORY_ICONS: Record<string, string> = {
   Education: '📚',
   Other: '📌',
 };
+
+// Add to existing constants.ts
+
+export const FREQUENCIES = [
+  { value: 'daily', label: 'Daily', icon: '📅' },
+  { value: 'weekly', label: 'Weekly', icon: '📆' },
+  { value: 'biweekly', label: 'Bi-weekly', icon: '🗓️' },
+  { value: 'monthly', label: 'Monthly', icon: '📊' },
+  { value: 'yearly', label: 'Yearly', icon: '🎂' },
+] as const;
+
+export type Frequency = typeof FREQUENCIES[number]['value'];

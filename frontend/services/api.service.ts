@@ -4,6 +4,10 @@ import {
   CreateExpenseDto,
   ExpensesResponse,
   ExpenseStats,
+  RecurringExpense,
+  CreateRecurringExpenseDto,
+  UpdateRecurringExpenseDto,
+  UpcomingRecurringExpense
 } from '@/types/api.types';
 
 export class ApiService {
@@ -36,4 +40,48 @@ export class ApiService {
     const { data } = await apiClient.post('/ai/suggest-category', { description });
     return data;
   }
+
+  // Add these methods to your existing ApiService class
+
+// Recurring Expenses
+static async getRecurringExpenses(): Promise<RecurringExpensesResponse> {
+  const { data } = await apiClient.get('/recurring-expenses');
+  return data;
 }
+
+static async getRecurringExpenseById(id: string): Promise<{ recurringExpense: RecurringExpense }> {
+  const { data } = await apiClient.get(`/recurring-expenses/${id}`);
+  return data;
+}
+
+static async createRecurringExpense(
+  expenseData: CreateRecurringExpenseDto
+): Promise<{ recurringExpense: RecurringExpense }> {
+  const { data } = await apiClient.post('/recurring-expenses', expenseData);
+  return data;
+}
+
+static async updateRecurringExpense(
+  id: string,
+  expenseData: UpdateRecurringExpenseDto
+): Promise<{ recurringExpense: RecurringExpense }> {
+  const { data } = await apiClient.put(`/recurring-expenses/${id}`, expenseData);
+  return data;
+}
+
+static async deleteRecurringExpense(id: string): Promise<{ message: string }> {
+  const { data } = await apiClient.delete(`/recurring-expenses/${id}`);
+  return data;
+}
+
+static async getUpcomingRecurringExpenses(): Promise<{ upcoming: UpcomingRecurringExpense[] }> {
+  const { data } = await apiClient.get('/recurring-expenses/upcoming');
+  return data;
+}
+
+static async generateRecurringExpense(id: string): Promise<{ expense: Expense; message: string }> {
+  const { data } = await apiClient.post(`/recurring-expenses/${id}/generate`);
+  return data;
+}
+}
+

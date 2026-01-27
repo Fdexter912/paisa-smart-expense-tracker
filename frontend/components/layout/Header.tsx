@@ -1,16 +1,18 @@
 'use client'
 
-import { LogOut, Menu, Moon, Sun } from 'lucide-react';
+import { LogOut, Menu, Moon, Sun, Home, Receipt, Repeat } from 'lucide-react';
 import { useAuthStore } from '@/store';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useState } from 'react';
+import Link from 'next/link';
 
 export const Header = () => {
   const { user } = useAuthStore();
   const router = useRouter();
+  const pathname = usePathname();
   const [isDark, setIsDark] = useState(false);
 
   const handleLogout = async () => {
@@ -27,12 +29,39 @@ export const Header = () => {
     document.documentElement.classList.toggle('dark');
   };
 
+  const navLinks = [
+    { href: '/dashboard', label: 'Dashboard', icon: Home },
+    { href: '/recurring', label: 'Recurring', icon: Repeat },
+  ];
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">💰</span>
-          <h1 className="text-xl font-bold">Smart Expense Tracker</h1>
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">💰</span>
+            <h1 className="text-xl font-bold">Smart Expense Tracker</h1>
+          </div>
+
+          {/* Navigation */}
+          <nav className="hidden md:flex items-center gap-2">
+            {navLinks.map((link) => {
+              const Icon = link.icon;
+              const isActive = pathname === link.href;
+              return (
+                <Link key={link.href} href={link.href}>
+                  <Button
+                    variant={isActive ? 'default' : 'ghost'}
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <Icon className="h-4 w-4" />
+                    {link.label}
+                  </Button>
+                </Link>
+              );
+            })}
+          </nav>
         </div>
 
         <div className="flex items-center gap-2">
