@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# Firebase
+firebase-debug.log
+firebase-adminsdk-*.json
+serviceAccountKey.json
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Test files
+test-*.js
+debug-*.js
+
+# Build
+dist/
+build/
+
+# Cache
+.cache/
+.npm/
