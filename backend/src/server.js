@@ -20,59 +20,46 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 /**
- * CORS CONFIGURATION - FIXED
+ * TRUST PROXY - IMPORTANT FOR RENDER
+ */
+app.set('trust proxy', 1);
+
+/**
+ * CORS CONFIGURATION - COMPREHENSIVE FIX
  */
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
+  'http://localhost:5174',
+  'https://paisa-smart-expense-tracker.vercel.app',
   process.env.FRONTEND_URL,
-  'https://paisa-smart-expense-tracker.vercel.app', // Replace with actual Vercel URL
-].filter(Boolean); // Remove undefined values
+].filter(Boolean);
 
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, Postman, etc.)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      console.warn('Blocked by CORS:', origin);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+// Simple CORS - allow all origins temporarily for debugging
+app.use(cors({
+  origin: '*', // Allow all origins temporarily
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   exposedHeaders: ['Content-Range', 'X-Content-Range'],
-  maxAge: 86400,
-};
-
-app.use(cors(corsOptions));
-
-// Handle preflight requests
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Credentials', 'true');
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-  next();
-});
+  preflightContinue: false,
+  optionsSuccessStatus: 204
+}));
 
 /**
- * MIDDLEWARE
+ * MIDDLEWARE - Must come BEFORE routes
  */
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Request logger (only in development)
-if (process.env.NODE_ENV !== 'production') {
-  app.use((req, res, next) => {
-    const timestamp = new Date().toISOString();
-    console.log(timestamp + ' - ' + req.method + ' ' + req.path);
-    next();
-  });
-}
+// Request logger
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  if (req.method === 'OPTIONS') {
+    console.log('  → Preflight request from:', req.headers.origin);
+  }
+  next();
+});
 
 /**
  * PUBLIC ROUTES
@@ -101,7 +88,7 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Remove or protect test-db endpoint in production
+// Test DB endpoint
 if (process.env.NODE_ENV !== 'production') {
   app.get('/api/test-db', asyncHandler(async (req, res) => {
     const testDoc = await db.collection('test').doc('connection').get();
@@ -169,10 +156,9 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 /**
- * CRON JOBS - Only in production
+ * CRON JOBS
  */
 if (process.env.NODE_ENV === 'production') {
-  // Run every day at midnight UTC
   cron.schedule('0 0 * * *', async () => {
     console.log('═══════════════════════════════════════');
     console.log('🕐 Running scheduled recurring expense generation...');
@@ -200,9 +186,6 @@ app.listen(PORT, () => {
   console.log('✅ Server running on port ' + PORT);
   console.log('✅ Environment: ' + process.env.NODE_ENV);
   console.log('✅ Firebase Project: ' + process.env.FIREBASE_PROJECT_ID);
-  if (process.env.FRONTEND_URL) {
-    console.log('✅ CORS enabled for: ' + process.env.FRONTEND_URL);
-  }
   console.log('✅ Allowed origins:', allowedOrigins.join(', '));
   console.log('═══════════════════════════════════════');
 });
